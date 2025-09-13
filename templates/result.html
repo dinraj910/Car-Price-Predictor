@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Price Prediction</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <div class="card p-4 shadow">
+      <h2 class="text-center mb-4">Predicted Price</h2>
+      <p class="lead">Here is your predicted price for the car with the given specs:</p>
+      <ul class="list-group mb-4">
+        {% for key, val in input_data.items() %}
+          <li class="list-group-item"><strong>{{ key }}:</strong> {{ val }}</li>
+        {% endfor %}
+      </ul>
+      <div class="mb-3">
+        <label for="currency" class="form-label">Select Currency:</label>
+        <select id="currency" class="form-select w-auto d-inline-block">
+          {% for code, rate in currency_rates.items() %}
+            <option value="{{ code }}" {% if code == default_currency %}selected{% endif %}>{{ code }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <h3 class="text-success">
+        Estimated Price: <span id="currency-symbol">$</span><span id="converted-price">{{ predicted_price }}</span>
+      </h3>
+      <div class="text-center mt-4">
+        <a href="/" class="btn btn-outline-secondary">Try Another</a>
+      </div>
+      <script type="text/javascript">
+        // Use JSON.parse to ensure valid JS from Jinja2 output
+        const rates = JSON.parse('{{ currency_rates|tojson|safe }}');
+        const basePrice = JSON.parse('{{ predicted_price|tojson|safe }}');
+        const currencySymbols = { 'USD': '$', 'INR': '₹', 'EUR': '€', 'GBP': '£' };
+        const currencySelect = document.getElementById('currency');
+        const priceSpan = document.getElementById('converted-price');
+        const symbolSpan = document.getElementById('currency-symbol');
+
+        function updatePrice() {
+          const selected = currencySelect.value;
+          const rate = rates[selected] || 1;
+          const converted = (basePrice * rate).toLocaleString(undefined, { maximumFractionDigits: 2 });
+          priceSpan.textContent = converted;
+          symbolSpan.textContent = currencySymbols[selected] || selected + ' ';
+        }
+        currencySelect.addEventListener('change', updatePrice);
+        updatePrice();
+      </script>
+    </div>
+  </div>
+</body>
+</html>
